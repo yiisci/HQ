@@ -33,8 +33,6 @@ class Config:
     """Application configuration"""
     # SAM.gov API
     sam_api_key: str
-   
-    
     # Azure AD / SharePoint
     tenant_id: str
     client_id: str
@@ -42,7 +40,7 @@ class Config:
     sharepoint_site_url: str  # https://tenant.sharepoint.com/sites/sitename
     sharepoint_list_name: str
     sam_api_base_url: str = "https://api.sam.gov/opportunities/v2/search"
-    
+
     # Sync settings
     days_to_sync: int = 30  # How far back to pull opportunities
     rate_limit_delay: float = 0.11  # SAM.gov: 10 req/sec = 0.1s, use 0.11 for safety
@@ -118,8 +116,7 @@ class SAMGovClient:
             
             # Rate limiting
             time.sleep(self.config.rate_limit_delay)
-            data = response.json()
-            print(data)
+            
             return response.json()
             
         except requests.exceptions.HTTPError as e:
@@ -577,7 +574,7 @@ class SyncOrchestrator:
 def main():
     """Main execution function"""
     
-    # # Load configuration from environment variables
+    # Load configuration from environment variables
     config = Config(
         sam_api_key=os.getenv("SAM_API_KEY"),
         tenant_id=os.getenv("AZURE_TENANT_ID"),
@@ -603,11 +600,6 @@ def main():
     # Run sync
     orchestrator = SyncOrchestrator(config)
     orchestrator.sync(download_attachments=True)
-    sam_client = SAMGovClient(config)
-    opportunities = sam_client.fetch_all_opportunities(
-            days_back=config.days_to_sync
-        )
-    print(opportunities)
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
