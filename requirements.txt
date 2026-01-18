@@ -1,0 +1,10 @@
+msal
+requests
+PyPDF2
+python-docx
+python-dotenv
+pytesseract
+pillow
+azure-functions
+pdf2image
+pytesseract
