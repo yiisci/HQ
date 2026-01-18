@@ -913,13 +913,3 @@ def download_attachments_parallel(self, item_id, resource_links):
 - **MSAL Python**: https://github.com/AzureAD/microsoft-authentication-library-for-python
 
 ---
-
-## Estimated Timeline
-
-- Azure setup: **20 minutes**
-- SharePoint list creation: **30 minutes**
-- Configuration & testing: **1 hour**
-- First production sync: **15 minutes**
-- Scheduling setup: **30 minutes**
-
-**Total: ~2.5 hours for complete setup**
