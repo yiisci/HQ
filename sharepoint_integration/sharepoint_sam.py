@@ -600,5 +600,5 @@ def main():
     orchestrator = SyncOrchestrator(config)
     orchestrator.sync(download_attachments=True)
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

@@ -4,8 +4,8 @@ from sharepoint_integration.sharepoint_sam import main
 
 app = func.FunctionApp()
 
-@app.timer_trigger(schedule="0 0 */6 * * *", 
-                   arg_name="myTimer", 
+@app.timer_trigger(schedule="0 0 */6 * * *",
+                   arg_name="myTimer",
                    run_on_startup=False)
 def scheduled_sync(myTimer: func.TimerRequest) -> None:
     logging.info('Starting SharePoint sync...')
