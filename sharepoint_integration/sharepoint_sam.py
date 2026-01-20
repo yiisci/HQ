@@ -242,6 +242,7 @@ class SharePointClient:
         return {
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json",
+            "Host": "graph.microsoft.com",
             "Accept": "application/json"
         }
     
@@ -283,31 +284,29 @@ class SharePointClient:
                 return self.list_id
         
         raise Exception(f"List '{self.config.sharepoint_list_name}' not found")
-    
-    def get_existing_notice_ids(self) -> set:
-        """Get all existing NoticeId values from SharePoint"""
+
+    def notice_id_exists(self, notice_id: str) -> bool:
+        """
+        Check if a specific NoticeId exists (more efficient for single checks)
+        Uses OData filter for direct lookup
+        """
         site_id = self.get_site_id()
         list_id = self.get_list_id()
         
-        url = f"https://graph.microsoft.com/v1.0/sites/{site_id}/lists/{list_id}/items?$expand=fields&$select=fields"
+        # OData filter query for exact match
+        filter_query = f"fields/NoticeId eq '{notice_id}'"
+        url = f"https://graph.microsoft.com/v1.0/sites/{site_id}/lists/{list_id}/items?expand=fields&$top=1&$filter={filter_query}"
         
-        existing_ids = set()
-        
-        while url:
+        try:
             response = requests.get(url, headers=self._graph_headers())
             response.raise_for_status()
             data = response.json()
             
-            for item in data.get("value", []):
-                notice_id = item.get("fields", {}).get("NoticeId")
-                if notice_id:
-                    existing_ids.add(notice_id)
-            
-            url = data.get("@odata.nextLink")
-        
-        logger.info(f"Found {len(existing_ids)} existing opportunities in SharePoint")
-        return existing_ids
-    
+            # If any results returned, it exists
+            return len(data.get("value", [])) > 0
+        except:
+            return False
+
     def create_list_item(self, fields: Dict) -> Dict:
         """Create a new list item via Graph API"""
         site_id = self.get_site_id()
@@ -513,7 +512,6 @@ class SyncOrchestrator:
         self.sp_client.authenticate()
         
         # Get existing opportunities
-        existing_ids = self.sp_client.get_existing_notice_ids()
         
         # Fetch opportunities from SAM.gov
         opportunities = self.sam_client.fetch_all_opportunities(
@@ -529,7 +527,8 @@ class SyncOrchestrator:
             notice_id = opp.get("noticeId")
             
             # Skip if already exists
-            if notice_id in existing_ids:
+            already_exists = self.sp_client.notice_id_exists(notice_id)
+            if already_exists:
                 skipped_count += 1
                 logger.debug(f"Skipping existing: {notice_id}")
                 continue
@@ -601,5 +600,5 @@ def main():
     orchestrator = SyncOrchestrator(config)
     orchestrator.sync(download_attachments=True)
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    main()
